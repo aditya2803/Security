@@ -1,0 +1,8 @@
+config SECURITY_MY_MODULE
+	bool "MY MODULE support"
+	depends on SECURITY
+	default n
+	help
+	  This selects the My Module LSM
+
+	  If you are unsure how to answer this question, answer N. 
