@@ -4,6 +4,7 @@
 #include<linux/fs.h>
 struct Node {
 	int id;
+	char label[100];
 	struct Node* next;
 };
 
@@ -89,10 +90,12 @@ struct Node* loadCFG(struct file* file) {
 			if(edges) {
 				struct Node* begin;
 				char* token = strsep((&node), " ");
+				char label[100];
+				int j = 0;
 				//Initialize a graph (Adj List) of struct Nodes', having size equal to number of nodes
 				if(graph == NULL) {
 					graph = kmalloc(sizeof(struct Node*) * newNodeId, GFP_ATOMIC);
-					for(int j = 0; j < newNodeId; j++) {
+					for(j = 0; j < newNodeId; j++) {
 						graph[j] = NULL;
 					}
 				}
@@ -107,10 +110,14 @@ struct Node* loadCFG(struct file* file) {
 				//Get mapping of dNode
 				dNode = getMapping(dNode);
 				//add edge from sNodeMapping to dNodeMapping
+				for(j = 7; token[j] != ']'; j++)
+					label[j - 7] = token[j];
+				label[j - 7] = '\0';
 				begin = graph[sNode];
 				if(begin == NULL) {
 					graph[sNode] = kmalloc(sizeof(struct Node), GFP_ATOMIC);
 					graph[sNode]->id = dNode;
+					strcpy(graph[sNode]->label, label);
 					graph[sNode]->next = NULL;
 				}
 				else {
@@ -119,6 +126,7 @@ struct Node* loadCFG(struct file* file) {
 					}
 					begin->next = kmalloc(sizeof(struct Node), GFP_ATOMIC);
 					begin->next->id = dNode;
+					strcpy(begin->next->label, label);
 					begin->next->next = NULL;
 				}
 			}
@@ -135,7 +143,7 @@ struct Node* loadCFG(struct file* file) {
 		}
 	}
 	/*
-	 * Print the adjacency list
+	 * Print the adjacency matrix
 	*/ 
 	for(i = 0; i < newNodeId; i++) {
 		struct Node* temp;
@@ -144,7 +152,7 @@ struct Node* loadCFG(struct file* file) {
 		if(temp == NULL)
 			continue;
 		while(temp != NULL) {
-			printk("%d\n", temp->id);
+			printk("%d %s\n", temp->id, temp->label);
 			temp = temp->next;
 		}
 	}
